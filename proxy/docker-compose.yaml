@@ -1,0 +1,28 @@
+version: "3.7"
+
+networks:
+  proxy-network:
+    external: true
+
+services:
+  caddy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        CADDY_VERSION: ${CADDY_VERSION:-2.6.4}
+    image: caddy:${CADDY_VERSION:-2.6.4}
+    container_name: reverse-proxy
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+      - "443:443/udp"
+    environment:
+      - CADDY_INGRESS_NETWORKS=caddy
+    networks:
+      - proxy-network
+    volumes:
+      - /docker-config/reverse-proxy/data:/data
+      - /docker-config/reverse-proxy/config:/config
+      - /var/run/docker.sock:/var/run/docker.sock
